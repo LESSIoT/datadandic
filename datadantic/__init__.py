@@ -5,8 +5,8 @@ from logging import getLogger
 from typing import (
     Any,
     Dict,
+    Iterable,
     Iterator,
-    List,
     Optional,
     Sequence,
     Type,
@@ -133,8 +133,8 @@ class Model(pydantic.BaseModel):
         cls: Type[TModel],
         filter_: Optional[dict] = None,
         order: Optional[Sequence[str]] = None,
-        fetch_params: Optional[dict] = None,
-    ) -> List[TModel]:
+        fetch_params: Optional[Dict[str, Any]] = None,
+    ) -> Iterable[TModel]:
         """Returns a list of models from the database based on a filter.
 
         Example: `Company.find({"company_id": "1234567-8"})`.
@@ -163,13 +163,16 @@ class Model(pydantic.BaseModel):
         for key, value in filter_.items():
             query = cls._add_filter(query, key, value)
 
-        return [
-            cls._cls(doc_id, doc_dict)
-            for doc_id, doc_dict in (
-                (doc.key.id, dict(doc)) for doc in query.fetch(**fetch_params)  # type: ignore
-            )
-            if doc_dict is not None
-        ]
+        if fetch_params is None:
+            fetch_params = {}
+
+        doc_iter = query.fetch(**fetch_params)
+        pages = doc_iter.pages
+        for page in pages:
+            for doc in page:
+                doc_dict = dict(doc)
+                if doc_dict is not None:
+                    yield (cls._cls(doc.key.id, doc_dict))
 
     @classmethod
     def find_one(
@@ -184,10 +187,9 @@ class Model(pydantic.BaseModel):
         :raise ModelNotFoundError: If the entry is not found.
         """
         models = cls.find(filter_, order=order, fetch_params={"limit": 1})
-        try:
-            return models[0]
-        except IndexError:
-            raise ModelNotFoundError(f"No '{cls.__name__}' found")
+        for model in models:
+            return model
+        raise ModelNotFoundError(f"No '{cls.__name__}' found")
 
     @classmethod
     def get_by_doc_id(cls: Type[TModel], doc_id: int) -> TModel:
