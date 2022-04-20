@@ -17,6 +17,9 @@ from typing import (
 import pydantic
 from google.cloud import datastore
 
+# there is an async client, which isn't documented... let's stay away from the undocumented parts for now.
+# from google.cloud.datastore_v1 import DatastoreClient, DatastoreAsyncClient
+
 from .exceptions import (
     ModelNotFoundError,
 )
@@ -25,7 +28,6 @@ from . import operators as op
 
 logger = getLogger("datadantic")
 
-# from google.cloud.datastore_v1 import DatastoreClient, DatastoreAsyncClient
 
 # --- configurations
 CONFIGURATIONS: Dict[str, Any] = {}
@@ -314,3 +316,9 @@ def list_kinds(namespace: str) -> Iterator[datastore.Entity]:
     db = get_client()
     query = db.query(namespace=namespace, kind="__kind__")
     return query.fetch()
+
+
+__all__ = (
+    "Model",
+    "configure",
+)
