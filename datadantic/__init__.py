@@ -101,7 +101,7 @@ class Model(pydantic.BaseModel):
         """
         Saves this model in the database.
         """
-        data = self.dict(by_alias=True)
+        data = self.dict(by_alias=True, exclude_none=True)
         if self.__document_id__ in data:
             del data[self.__document_id__]
         key = self._get_doc_key()
