@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "datadantic"
-version = "0.1.0"
+version = "0.1.1"
 description = "Pydantic base models for Google Datastore"
 authors = ["Maximiliano Curia <maximiliano.curia@gmail.com>"]
 license = "BSD-3-Clause"

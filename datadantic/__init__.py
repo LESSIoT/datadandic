@@ -250,13 +250,13 @@ class Model(pydantic.BaseModel):
         value: Any,
     ) -> datastore.Query:
         "Add filter to the query"
-        if type(value) is dict:
-            for f_type in value:
+        if isinstance(value, dict):
+            for f_type, f_value in value.items():
                 if f_type not in FIND_TYPES:
                     raise ValueError(
                         f"Unsupported filter type: {f_type}. Supported types are : {', '.join(FIND_TYPES)}"
                     )
-                query.add_filter(field, f_type, value)
+                query.add_filter(field, f_type, f_value)
         else:
             query.add_filter(field, op.EQ, value)  # type: ignore
         return query
